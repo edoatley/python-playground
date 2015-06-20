@@ -1,0 +1,6 @@
+Some python things to know
+
+1) learn about structuring code into files including / excluding etc
+2) learn basic UI
+3) interacting with files
+4) use with BASH

@@ -46,7 +46,7 @@ def evaluateBoardForWinner():
 
     print("Horizontal ", checkHorizontals())
     print("Vertical ", checkVerticals())
-    print(checkDiagonals())
+    print("Diagonal ", checkDiagonals())
 
 
 def checkHorizontals():
@@ -54,12 +54,12 @@ def checkHorizontals():
     
     result = "No Winner"
 
-    for rowIndex in range(BOARDHEIGHT):
+    for y in range(BOARDHEIGHT):
         # initialise at the start of the current row
         colour = RED
         count = 0
-        for columnIndex in range(BOARDWIDTH):
-            thisColour = BOARD[columnIndex][rowIndex]
+        for x in range(BOARDWIDTH):
+            thisColour = BOARD[x][y]
 
             if thisColour == colour:
                 count = count + 1
@@ -70,7 +70,7 @@ def checkHorizontals():
                 count = 1
 
             if count == 4:
-                result = "win for {0}, in row {1:d}".format(colour, rowIndex + 1)
+                result = "win for {0}, in row {1:d}".format(colour, y + 1)
                 break
    
     return result
@@ -80,12 +80,12 @@ def checkVerticals():
 
     result = "No Winner"
  
-    for columnIndex in range(BOARDWIDTH):
+    for x in range(BOARDWIDTH):
         # initialise at the start of the current column
         colour = RED
         count = 0
-        for rowIndex in range(BOARDHEIGHT):
-            thisColour = BOARD[columnIndex][rowIndex]
+        for y in range(BOARDHEIGHT):
+            thisColour = BOARD[x][y]
 
             if thisColour == colour:
                 count = count + 1
@@ -96,15 +96,77 @@ def checkVerticals():
                 count = 1
 
             if count == 4:
-                result = "win for {0}, in column {1:1d}".format(colour, columnIndex + 1)
+                result = "win for {0}, in column {1:1d}".format(colour, x + 1)
                 break
 
     return result
 
 def checkDiagonals():
-	"""This method checks for any diagonal victories! """
-	#need to implement checks in both diagonal directions
-	
+    """This method checks for any diagonal victories! 
+        The following example 7 * 6 board shows the positions we need to start checking for diagonal win at:
+
+		  +---+---+---+---+---+---+---+
+		5 |   |   |   |   |   |   |   | 
+		  +---+---+---+---+---+---+---+
+		4 |   |   |   |   |   |   |   | 
+		  +---+---+---+---+---+---+---+
+		3 |   |   |   |   |   |   |   | 
+		  +---+---+---+---+---+---+---+
+		2 | f |   |   |   |   |   | b | 
+		  +---+---+---+---+---+---+---+
+		1 | f |   |   |   |   |   | b | 
+		  +---+---+---+---+---+---+---+
+		0 | f | f | f | x | b | b | b | 
+		  +---+---+---+---+---+---+---+
+		    0   1   2   3   4   5   6 
+        
+        where f is checking forwards (increment of 1 and b is backwards (increment of -1) x is both)
+    """
+
+    for x in range(BOARDWIDTH):
+        for y in range(BOARDHEIGHT - 3):
+            if((x == 0 or y == 0) and x < BOARDWIDTH - 3):
+                res = checkDiagonal(x, y, 1)
+                if res != "No Winner":
+                	return res
+            if((x == (BOARDWIDTH - 1) or y == 0) and x >= BOARDWIDTH - 4):
+                checkDiagonal(x, y, -1)
+                if res != "No Winner":
+                	return res
+
+    return "No Winner"
+
+def checkDiagonal(startX, startY, increment):
+    """This method looks from the provided start co-ordinate for a diagonal victory
+       The increment should be set to 1 for the check to look forward or -1 for backwards"""
+    print('check diagonal [{0:1d}, {1:1d}] using increment {2:1d}'.format(startX, startY, increment))
+
+    result = "No Winner"
+    x = startX
+    y = startY
+    colour = RED
+    count = 0
+    
+    while ((x < BOARDWIDTH and x >= 0) and (y < BOARDHEIGHT and y >= 0)):
+        thisColour = BOARD[x][y]
+
+        if thisColour == colour:
+            count = count + 1
+        elif thisColour == EMPTY:
+            count = 0
+        else:
+            colour = thisColour
+            count = 1
+
+        if count == 4:
+            result = "win for {0}, ending at [{1:1d}, {2:1d}]".format(colour, x+1, y+1)
+            break
+
+        x = x + increment
+        y = y + 1
+
+    return result
+    
 def randomlySelectFirstPlayer():
     """ This method randomly chooses the first player colour and returns """
     
@@ -141,11 +203,11 @@ def playATurnAtRandom(colour):
     validMoveExists = checkValidMoveExists()
 
     while invalidMove and validMoveExists:
-        columnIndex = randint(0, BOARDWIDTH - 1)
-        heightIndex = findLowestValidHeightPosition(columnIndex)
+        x = randint(0, BOARDWIDTH - 1)
+        heightIndex = findLowestValidHeightPosition(x)
         if(heightIndex >= 0):
             invalidMove = False
-            BOARD[columnIndex][heightIndex] = colour   
+            BOARD[x][heightIndex] = colour   
 
 def checkValidMoveExists():
     """ This method to check there actually is a valid place to play """
@@ -161,12 +223,12 @@ def checkValidMoveExists():
     return validMoveExists
 
 
-def findLowestValidHeightPosition(columnIndex):
+def findLowestValidHeightPosition(x):
     # this needs to check if the column is a valid move and if so return the lowest index. 
     # If move is invalid as the column is full return -1
     
     for y in range(BOARDHEIGHT):
-        if EMPTY == BOARD[columnIndex][y]:
+        if EMPTY == BOARD[x][y]:
             return y
     
     return -1    
@@ -187,9 +249,9 @@ def drawBoard():
     # start with a structural row outside the loop
     drawStructuralRow()
 
-    # when drawing we need to do rowIndex axis backwards i.e bottom to top!
-    for rowIndex in range(BOARDHEIGHT-1, -1, -1):
-        drawRow(rowIndex)  
+    # when drawing we need to do y axis backwards i.e bottom to top!
+    for y in range(BOARDHEIGHT-1, -1, -1):
+        drawRow(y)  
         drawStructuralRow()  
 
     # draw numbers along the bottom
@@ -204,8 +266,8 @@ def drawStructuralRow():
 def drawRow(rowNum):
     print("{0:1d} ".format(rowNum + 1), end='')
 
-    for columnIndex in range(BOARDWIDTH):
-        print('| {0} '.format(BOARD[columnIndex][rowNum]), end='')
+    for x in range(BOARDWIDTH):
+        print('| {0} '.format(BOARD[x][rowNum]), end='')
     
     print('| ')
 

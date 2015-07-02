@@ -5,11 +5,19 @@ from random import randint
 # import sys
 
 BOARDWIDTH = 7
+# The number of squares wide the gameboard is
 BOARDHEIGHT = 6
+# The number of squares high the gameboard is
 RED = 'R'
+# designation for the red game token 
 YELLOW = 'Y'
+# designation for the yellow game token
 EMPTY = ' '
+# designation for empty game space
+GAME_RESULT = [];
+# holds the result of the game
 
+BOARD = [[EMPTY for y in range(BOARDHEIGHT)] for x in range(BOARDWIDTH)] 
 # co-ordinates are always given in the for x, y i.e. across then up
 #
 #
@@ -28,31 +36,37 @@ EMPTY = ' '
 #     +---+---+---+---+---+---+---+
 #       0   1   2   3   4   5   6 ---> x
 
-BOARD = [[EMPTY for y in range(BOARDHEIGHT)] for x in range(BOARDWIDTH)] 
 
 def main():
     #fillATestBoard()
 
     firstToPlay = randomlySelectFirstPlayer()
 
-    playRandomlyANumberOfTurns(30, firstToPlay)
+    playRandomlyANumberOfTurns(35, firstToPlay)
 
     drawBoard()
-    
     evaluateBoardForWinner()
+    drawBoard()
+    
 
 def evaluateBoardForWinner():
     """ This method examines the board for a winner either vertically, diagonally or horizontally """
 
-    print("Horizontal ", checkHorizontals())
-    print("Vertical ", checkVerticals())
-    print("Diagonal ", checkDiagonals())
+    checkHorizontals()
+    checkVerticals()
+    checkDiagonals()
+    
+    print("\nAnd the winner is: \n")
+    
+    if len(GAME_RESULT) > 0:
+        for res in GAME_RESULT : 
+            print(res)
+    else :
+        print("No Winner")
 
 
 def checkHorizontals():
     """This method checks for any horizontal victories! """
-    
-    result = "No Winner"
 
     for y in range(BOARDHEIGHT):
         # initialise at the start of the current row
@@ -60,7 +74,7 @@ def checkHorizontals():
         count = 0
         for x in range(BOARDWIDTH):
             thisColour = BOARD[x][y]
-
+ 
             if thisColour == colour:
                 count = count + 1
             elif thisColour == EMPTY:
@@ -70,15 +84,13 @@ def checkHorizontals():
                 count = 1
 
             if count == 4:
-                result = "win for {0}, in row {1:d}".format(colour, y + 1)
+                GAME_RESULT.append("Horizontal win for {0}, in row {1:d}".format(colour, y + 1))
                 break
    
-    return result
+    
 
 def checkVerticals():
     """This method checks for any vertical victories! """
-
-    result = "No Winner"
  
     for x in range(BOARDWIDTH):
         # initialise at the start of the current column
@@ -96,29 +108,28 @@ def checkVerticals():
                 count = 1
 
             if count == 4:
-                result = "win for {0}, in column {1:1d}".format(colour, x + 1)
+                GAME_RESULT.append("Vertical win for {0}, in row {1:d}".format(colour, y + 1))
                 break
 
-    return result
 
 def checkDiagonals():
     """This method checks for any diagonal victories! 
         The following example 7 * 6 board shows the positions we need to start checking for diagonal win at:
 
-		  +---+---+---+---+---+---+---+
-		5 |   |   |   |   |   |   |   | 
-		  +---+---+---+---+---+---+---+
-		4 |   |   |   |   |   |   |   | 
-		  +---+---+---+---+---+---+---+
-		3 |   |   |   |   |   |   |   | 
-		  +---+---+---+---+---+---+---+
-		2 | f |   |   |   |   |   | b | 
-		  +---+---+---+---+---+---+---+
-		1 | f |   |   |   |   |   | b | 
-		  +---+---+---+---+---+---+---+
-		0 | f | f | f | x | b | b | b | 
-		  +---+---+---+---+---+---+---+
-		    0   1   2   3   4   5   6 
+          +---+---+---+---+---+---+---+
+        5 |   |   |   |   |   |   |   | 
+          +---+---+---+---+---+---+---+
+        4 |   |   |   |   |   |   |   | 
+          +---+---+---+---+---+---+---+
+        3 |   |   |   |   |   |   |   | 
+          +---+---+---+---+---+---+---+
+        2 | f |   |   |   |   |   | b | 
+          +---+---+---+---+---+---+---+
+        1 | f |   |   |   |   |   | b | 
+          +---+---+---+---+---+---+---+
+        0 | f | f | f | x | b | b | b | 
+          +---+---+---+---+---+---+---+
+            0   1   2   3   4   5   6 
         
         where f is checking forwards (increment of 1 and b is backwards (increment of -1) x is both)
     """
@@ -127,21 +138,15 @@ def checkDiagonals():
         for y in range(BOARDHEIGHT - 3):
             if((x == 0 or y == 0) and x < BOARDWIDTH - 3):
                 res = checkDiagonal(x, y, 1)
-                if res != "No Winner":
-                	return res
+
             if((x == (BOARDWIDTH - 1) or y == 0) and x >= BOARDWIDTH - 4):
                 checkDiagonal(x, y, -1)
-                if res != "No Winner":
-                	return res
-
-    return "No Winner"
 
 def checkDiagonal(startX, startY, increment):
     """This method looks from the provided start co-ordinate for a diagonal victory
        The increment should be set to 1 for the check to look forward or -1 for backwards"""
-    print('check diagonal [{0:1d}, {1:1d}] using increment {2:1d}'.format(startX, startY, increment))
-
-    result = "No Winner"
+    print('>>>>> check diagonal [{0:1d}, {1:1d}] using increment {2:1d}'.format(startX, startY, increment))
+    
     x = startX
     y = startY
     colour = RED
@@ -149,7 +154,7 @@ def checkDiagonal(startX, startY, increment):
     
     while ((x < BOARDWIDTH and x >= 0) and (y < BOARDHEIGHT and y >= 0)):
         thisColour = BOARD[x][y]
-
+        print('>>>>>>>>>>>>>>>>>>>>> check [{0:1d}, {1:1d}] =  {2}'.format(x, y, thisColour))
         if thisColour == colour:
             count = count + 1
         elif thisColour == EMPTY:
@@ -158,14 +163,14 @@ def checkDiagonal(startX, startY, increment):
             colour = thisColour
             count = 1
 
+        print('>>>>>>>>>>>>>>>>>>>>> count = {0:1d}, Colour  =  {1}'.format(count, colour))
+
         if count == 4:
-            result = "win for {0}, ending at [{1:1d}, {2:1d}]".format(colour, x+1, y+1)
+            GAME_RESULT.append("Diagonal win for {0}, between [{3:d}, {4:d}] and [{1:d}, {2:d}]".format(colour, x+1, y+1, x - (increment * 3) + 1, y-2))
             break
 
         x = x + increment
         y = y + 1
-
-    return result
     
 def randomlySelectFirstPlayer():
     """ This method randomly chooses the first player colour and returns """
@@ -232,17 +237,6 @@ def findLowestValidHeightPosition(x):
             return y
     
     return -1    
-
-def fillATestBoard():
-    print('fill')
-    for x in range(BOARDWIDTH):
-        for y in range(BOARDHEIGHT):
-            if ((x + y) % 2) == 1:
-                print("BOARD[{0:1d}][{1:1d}] is X".format(x, y))
-                BOARD[x][y] = RED
-            else:
-                print("BOARD[{0:1d}][{1:1d}] is O".format(x, y))
-                BOARD[x][y] = YELLOW 
 
 # functions to draw the connect 4 board
 def drawBoard():
